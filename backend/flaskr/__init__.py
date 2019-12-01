@@ -59,8 +59,8 @@ def create_app(test_config=None):
   @app.route('/questions', methods=['GET'])
   def get_questions():
     page = request.args.get('page', 1, type=int)
-    start = (page - 1) * 10
-    end = start + 10
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
     questions = Question.query.all()
     categories = Category.query.all()
     formated_questions = [question.format() for question in questions]
@@ -101,7 +101,14 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+  @app.route('/questions', methods=['POST'])
+  def create_question():
+    data = request.json
+    question = Question(question=data['question'], answer=data['answer'],
+    category=data['category'], difficulty=data['difficulty'])
 
+    question.insert()
+    return jsonify({'success': True})
 
 
   '''
@@ -123,17 +130,6 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
-  @app.route('/categories/<int:category_id>/questions')
-  def get_questions_by_category(category_id):
-    questions = Question.query.filter(Question.category == category_id).all()
-    formated_questions = [question.format() for question in questions]
-    return jsonify({
-      'success': True,
-      'questions': formated_questions,
-      'total_questions': len(formated_questions),
-      'current_category': category_id
-    })
-
 
 
   '''
@@ -147,6 +143,18 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+  @app.route('/quizzes', methods=['POST'])
+  def get_next_question():
+    previous_questions = request.json['previous_questions']
+    quiz_category = request.json['quiz_category']
+    questions = Question.query.filter(Question.category == quiz_category['id']).all()
+    question = random.choice(questions)
+    while question.id in previous_questions:
+      question = random.choice(questions)
+    return jsonify({
+      'success': True,
+      'question': question.format()
+    })
 
   '''
   @TODO: 
