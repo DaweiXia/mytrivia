@@ -56,23 +56,31 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
-  @app.route('/questions', methods=['GET'])
+  @app.route('/questions', methods=['GET', 'POST'])
   def get_questions():
-    page = request.args.get('page', 1, type=int)
-    start = (page - 1) * QUESTIONS_PER_PAGE
-    end = start + QUESTIONS_PER_PAGE
-    questions = Question.query.all()
-    categories = Category.query.all()
-    formated_questions = [question.format() for question in questions]
-    formated_categories = {category.id: category.type for category in categories}
+    if request.method == 'GET':
+      page = request.args.get('page', 1, type=int)
+      start = (page - 1) * QUESTIONS_PER_PAGE
+      end = start + QUESTIONS_PER_PAGE
+      questions = Question.query.all()
+      categories = Category.query.all()
+      formated_questions = [question.format() for question in questions]
+      formated_categories = {category.id: category.type for category in categories}
 
-    return jsonify({
-      'success': True,
-      'questions': formated_questions[start:end],
-      'total_questions': len(formated_questions),
-      'categories': formated_categories,
-      'current_category': None
-    })
+      return jsonify({
+        'success': True,
+        'questions': formated_questions[start:end],
+        'total_questions': len(formated_questions),
+        'categories': formated_categories,
+        'current_category': None
+      })
+    elif request.method == 'POST':
+      data = request.json
+      if 'searchTerm' in data:
+        return get_questions_by_search_term(data['searchTerm'])
+      else:
+        return create_question(data)
+
 
   '''
   @TODO: 
@@ -101,9 +109,7 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
-  @app.route('/questions', methods=['POST'])
-  def create_question():
-    data = request.json
+  def create_question(data):
     question = Question(question=data['question'], answer=data['answer'],
     category=data['category'], difficulty=data['difficulty'])
 
@@ -121,6 +127,15 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  def get_questions_by_search_term(search_term):
+    questions = Question.query.filter(Question.question.contains(search_term)).all()
+    formated_questions = [question.format() for question in questions]
+    return jsonify({
+      'success': True,
+      'questions': formated_questions,
+      'total_questions': len(formated_questions),
+      'current_category': None
+    })
 
   '''
   @TODO: 
