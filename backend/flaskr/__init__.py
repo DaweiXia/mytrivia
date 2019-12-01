@@ -148,13 +148,20 @@ def create_app(test_config=None):
     previous_questions = request.json['previous_questions']
     quiz_category = request.json['quiz_category']
     questions = Question.query.filter(Question.category == quiz_category['id']).all()
-    question = random.choice(questions)
-    while question.id in previous_questions:
+    if len(previous_questions) == len(questions):
+      question = None
+      return jsonify({
+        'success': True,
+        'question': question
+      })
+    else:
       question = random.choice(questions)
-    return jsonify({
-      'success': True,
-      'question': question.format()
-    })
+      while question.id in previous_questions:
+        question = random.choice(questions)
+      return jsonify({
+        'success': True,
+        'question': question.format()
+      })
 
   '''
   @TODO: 
