@@ -16,7 +16,9 @@ def create_app(test_config=None):
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
   '''
-  cors = CORS(app, resources={r"/questions/*": {"origins": "*"}})
+  cors = CORS(app, resources={
+    r"/questions/*": {"origins": "*"},
+    r"/categories/*": {"origins": "*"}})
 
   '''
   @TODO: Use the after_request decorator to set Access-Control-Allow
@@ -24,6 +26,7 @@ def create_app(test_config=None):
   @app.after_request
   def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', "Content-Type, Authorization")
+    response.headers.add('Access-Control-Allow-Credentials', "true")
     response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
     return response
 
@@ -82,7 +85,6 @@ def create_app(test_config=None):
   def delete_question(question_id):
     try:
       Question.query.filter(Question.id == question_id).delete()
-      db.session.commit()
     except:
       db.session.rollback()
       print('can not delete')
@@ -99,6 +101,7 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+
 
 
   '''
@@ -120,6 +123,16 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/categories/<int:category_id>/questions')
+  def get_questions_by_category(category_id):
+    questions = Question.query.filter(Question.category == category_id).all()
+    formated_questions = [question.format() for question in questions]
+    return jsonify({
+      'success': True,
+      'questions': formated_questions,
+      'total_questions': len(formated_questions),
+      'current_category': category_id
+    })
 
 
 
