@@ -172,7 +172,10 @@ def create_app(test_config=None):
   def get_next_question():
     previous_questions = request.json['previous_questions']
     quiz_category = request.json['quiz_category']
-    questions = Question.query.filter(Question.category == quiz_category['id']).all()
+    if quiz_category['id'] == 0:
+      questions = Question.query.all()
+    else:
+      questions = Question.query.filter(Question.category == quiz_category['id']).all()
     if len(previous_questions) == len(questions):
       question = None
       return jsonify({
