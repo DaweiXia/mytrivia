@@ -37,7 +37,7 @@ def create_app(test_config=None):
   @app.route('/categories')
   def get_categories():
     categories = Category.query.all()
-    formated_categories = [category.format() for category in categories]
+    formated_categories = {category.id: category.type for category in categories}
     return jsonify({
       'success': True,
       'categories': formated_categories
@@ -101,6 +101,7 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+
 
   '''
   @TODO: 
