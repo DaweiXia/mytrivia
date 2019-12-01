@@ -16,7 +16,7 @@ def create_app(test_config=None):
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
   '''
-  cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+  cors = CORS(app, resources={r"/questions": {"origins": "*"}})
 
   '''
   @TODO: Use the after_request decorator to set Access-Control-Allow
@@ -36,7 +36,10 @@ def create_app(test_config=None):
   def get_categories():
     categories = Category.query.all()
     formated_categories = [category.format() for category in categories]
-    return jsonify({'categories': formated_categories})
+    return jsonify({
+      'success': True,
+      'categories': formated_categories
+    })
 
   '''
   @TODO: 
@@ -58,9 +61,10 @@ def create_app(test_config=None):
     questions = Question.query.all()
     categories = Category.query.all()
     formated_questions = [question.format() for question in questions]
-    formated_categories = [category.format() for category in categories]
+    formated_categories = {category.id: category.type for category in categories}
 
     return jsonify({
+      'success': True,
       'questions': formated_questions[start:end],
       'total_questions': len(formated_questions),
       'categories': formated_categories,
@@ -105,6 +109,7 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+
 
 
   '''
