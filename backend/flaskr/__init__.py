@@ -38,6 +38,10 @@ def create_app(test_config=None):
   @app.route('/categories')
   def get_categories():
     categories = Category.query.all()
+
+    if len(categories) == 0:
+      abort(404)
+
     formated_categories = {category.id: category.type for category in categories}
     return jsonify({
       'success': True,
@@ -64,6 +68,11 @@ def create_app(test_config=None):
       end = start + QUESTIONS_PER_PAGE
       questions = Question.query.all()
       categories = Category.query.all()
+
+      if (len(questions) == 0 or len(categories) == 0 or
+      len(questions) < start):
+        abort(404)
+
       formated_questions = [question.format() for question in questions]
       formated_categories = {category.id: category.type for category in categories}
 
@@ -92,12 +101,17 @@ def create_app(test_config=None):
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
     try:
-      Question.query.filter(Question.id == question_id).delete()
+      question = Question.query.filter(Question.id == question_id)
+
+      if question is None:
+        abort(404)
+
+      question.delete()
+
+      return jsonify({'success': True})
     except:
       db.session.rollback()
-      print('can not delete')
-
-    return jsonify({'success': True})
+      abort(422)
 
   '''
   @TODO: 
@@ -110,11 +124,14 @@ def create_app(test_config=None):
   of the questions list in the "List" tab.  
   '''
   def create_question(data):
-    question = Question(question=data['question'], answer=data['answer'],
-    category=data['category'], difficulty=data['difficulty'])
-
-    question.insert()
-    return jsonify({'success': True})
+    try:
+      question = Question(question=data['question'], answer=data['answer'],
+      category=data['category'], difficulty=data['difficulty'])
+      question.insert()
+      return jsonify({'success': True})
+    except:
+      db.session.rollback()
+      abort(422)
 
 
   '''
@@ -128,14 +145,19 @@ def create_app(test_config=None):
   Try using the word "title" to start. 
   '''
   def get_questions_by_search_term(search_term):
-    questions = Question.query.filter(Question.question.contains(search_term)).all()
-    formated_questions = [question.format() for question in questions]
-    return jsonify({
-      'success': True,
-      'questions': formated_questions,
-      'total_questions': len(formated_questions),
-      'current_category': None
-    })
+    if search_term:
+      questions = Question.query.filter(Question.question.contains(search_term)).all()
+      
+      if questions:     
+        formated_questions = [question.format() for question in questions]
+        return jsonify({
+          'success': True,
+          'questions': formated_questions,
+          'total_questions': len(formated_questions),
+          'current_category': None
+        })
+      else:
+        abort(404)
 
   '''
   @TODO: 
@@ -148,14 +170,17 @@ def create_app(test_config=None):
   @app.route('/categories/<int:category_id>/questions')
   def get_questions_by_category(category_id):
     questions = Question.query.filter(Question.category == category_id).all()
-    formated_questions = [question.format() for question in questions]
-    return jsonify({
-      'success': True,
-      'questions': formated_questions,
-      'total_questions': len(formated_questions),
-      'current_category': category_id
-    })
 
+    if questions:    
+      formated_questions = [question.format() for question in questions]
+      return jsonify({
+        'success': True,
+        'questions': formated_questions,
+        'total_questions': len(formated_questions),
+        'current_category': category_id
+      })
+    else:
+      abort(404)
 
   '''
   @TODO: 
@@ -176,26 +201,46 @@ def create_app(test_config=None):
       questions = Question.query.all()
     else:
       questions = Question.query.filter(Question.category == quiz_category['id']).all()
-    if len(previous_questions) == len(questions):
-      question = None
-      return jsonify({
-        'success': True,
-        'question': question
-      })
-    else:
-      question = random.choice(questions)
-      while question.id in previous_questions:
+    
+    if questions:
+      if len(previous_questions) == len(questions):
+        question = None
+        return jsonify({
+          'success': True,
+          'question': question
+        })
+      else:
         question = random.choice(questions)
-      return jsonify({
-        'success': True,
-        'question': question.format()
-      })
+        while question.id in previous_questions:
+          question = random.choice(questions)
+        return jsonify({
+          'success': True,
+          'question': question.format()
+        })
+    else:
+      abort(404)
 
   '''
   @TODO: 
   Create error handlers for all expected errors 
   including 404 and 422. 
   '''
+  @app.errorhandler(404)
+  def not_found(error):
+    return jsonify({
+      'success': False,
+      'error': 404,
+      'message': 'Resource Not Found'
+    }), 404
+
+  @app.errorhandler(422)
+  def unprocessable(error):
+    return jsonify({
+      'success': False,
+      'error': 422,
+      'message': 'Unprocessable'
+    }), 422
+  
   
   return app
 
