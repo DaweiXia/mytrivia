@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
 
-from models import setup_db, Question, Category
+from models import setup_db, Question, Category, db
 
 QUESTIONS_PER_PAGE = 10
 
@@ -16,7 +16,9 @@ def create_app(test_config=None):
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
   '''
-  cors = CORS(app, resources={r"/questions": {"origins": "*"}})
+  cors = CORS(app, resources={
+    r"/questions": {"origins": "*"},
+    r"/questions/*": {"origins": "*"}})
 
   '''
   @TODO: Use the after_request decorator to set Access-Control-Allow
@@ -78,6 +80,16 @@ def create_app(test_config=None):
   TEST: When you click the trash icon next to a question, the question will be removed.
   This removal will persist in the database and when you refresh the page. 
   '''
+  @app.route('/questions/<int:question_id>', methods=['DELETE'])
+  def delete_question(question_id):
+    try:
+      Question.query.filter(Question.id == question_id).delete()
+      db.session.commit()
+    except:
+      db.session.rollback()
+      print('can not delete')
+
+    return jsonify({'success': True})
 
   '''
   @TODO: 
