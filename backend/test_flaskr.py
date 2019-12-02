@@ -25,6 +25,13 @@ class TriviaTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
+
+        self.new_question = {
+            'question': 'Who invent the first plane?',
+            'answer': 'Wright Brothers',
+            'difficulty': 2,
+            'category': 4
+        }
     
     def tearDown(self):
         """Executed after reach test"""
@@ -75,6 +82,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 422)
         self.assertFalse(data['success'])
         self.assertEqual(data['message'], 'Unprocessable')
+
+    def test_post_new_question(self):
+        res = self.client().post('/questions', json=self.new_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['success'])
         
 
 
