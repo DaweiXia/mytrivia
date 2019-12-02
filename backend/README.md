@@ -72,9 +72,12 @@ This README is missing documentation of your endpoints. Below is an example for 
 
 Endpoints
 GET '/categories'
-GET ...
-POST ...
-DELETE ...
+GET '/questions'
+GET '/categories/{category_id}/questions'
+POST '/questions'
+POST '/questions'
+POST '/quizzes'
+DELETE '/questions/{question_id}'
 
 GET '/categories'
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
@@ -87,6 +90,107 @@ GET '/categories'
 '5' : "Entertainment",
 '6' : "Sports"}
 
+GET '/questions'
+- Fetches an array of questions
+- Request Argument: page
+- Returns: All questions, categories, the amount of questions and current category
+{
+  "categories": {
+    "1": "Science", 
+    "2": "Art", 
+    "3": "Geography", 
+    "4": "History", 
+    "5": "Entertainment", 
+    "6": "Sports"
+  }, 
+  "current_category": null, 
+  "questions": [
+    {
+      "answer": "Apollo 13", 
+      "category": 5, 
+      "difficulty": 4, 
+      "id": 2, 
+      "question": "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
+    }, 
+    {
+      "answer": "Tom Cruise", 
+      "category": 5, 
+      "difficulty": 4, 
+      "id": 4, 
+      "question": "What actor did author Anne Rice first denounce, then praise in the role of her beloved Lestat?"
+    }, 
+    {
+      "answer": "Edward Scissorhands", 
+      "category": 5, 
+      "difficulty": 3, 
+      "id": 6, 
+      "question": "What was the title of the 1990 fantasy directed by Tim Burton about a young man with multi-bladed appendages?"
+    }, 
+    {
+      "answer": "Brazil", 
+      "category": 6, 
+      "difficulty": 3, 
+      "id": 10, 
+      "question": "Which is the only team to play in every soccer World Cup tournament?"
+    }, 
+    {
+      "answer": "Uruguay", 
+      "category": 6, 
+      "difficulty": 4, 
+      "id": 11, 
+      "question": "Which country won the first ever soccer World Cup in 1930?"
+    }, 
+  ], 
+  "success": true, 
+  "total_questions": 5
+}
+
+GET '/categories/{category_id}/questions'
+- Fetches an array of questions that belongs to specific category
+- Request Argument: the id of specific category
+- Returns: questions of a specific category, current category and total questions
+
+{
+  "current_category": 4, 
+  "questions": [
+    {
+      "answer": "George Washington Carver", 
+      "category": 4, 
+      "difficulty": 2, 
+      "id": 12, 
+      "question": "Who invented Peanut Butter?"
+    }, 
+    {
+      "answer": "Scarab", 
+      "category": 4, 
+      "difficulty": 4, 
+      "id": 23, 
+      "question": "Which dung beetle was worshipped by the ancient Egyptians?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 2
+}
+
+POST '/questions'
+- Create a new question and insert it into database
+- Request Argument: the content, answer, difficulty and category of the question you want to post
+- Returns: status of create a new question
+
+POST '/questions'
+- Fetch questions by search term
+- Request Argument: the search term
+- Returns: an array with all questions that contain the search term, total questions amount and current category
+
+POST '/quizzes'
+- Fetch next question
+- Request Argument: previous questions and the category of current question
+- Returns: a question that haven't been shown
+
+DELETE '/questions/{question_id}'
+- Delete specific question
+- Request Argument: question id 
+- Returns: status of delete a specific question
 ```
 
 
