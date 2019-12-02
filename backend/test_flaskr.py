@@ -67,6 +67,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertTrue(data['success'])
         self.assertEqual(question, None)
+
+    def test_422_delete_question_do_not_exist(self):
+        res = self.client().delete('/questions/50')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertFalse(data['success'])
+        self.assertEqual(data['message'], 'Unprocessable')
         
 
 
